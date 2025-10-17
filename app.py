@@ -168,6 +168,24 @@
 
 
 # Dynamic Flask, CORS, and dotenv imports for compatibility/static analysis
+try:
+    import importlib
+    _ngrok_mod = importlib.import_module('pyngrok')
+    ngrok = getattr(_ngrok_mod, 'ngrok')
+    # Open a tunnel on port 5000
+    public_url = ngrok.connect(5000)
+    print("Ngrok URL:", public_url)
+except Exception:
+    # pyngrok not installed; fallback stub that mimics connect()
+    class _NgrokStub:
+        def connect(self, port):
+            print("pyngrok not installed; skipping ngrok tunnel.")
+            return f"http://127.0.0.1:{port}"
+    ngrok = _NgrokStub()
+    public_url = ngrok.connect(5000)
+    print("Ngrok URL (local):", public_url)
+
+# Then start your Flask app as usual
 
 try:
     import importlib
