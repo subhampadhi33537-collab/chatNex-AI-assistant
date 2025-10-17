@@ -111,6 +111,58 @@ main {
       /* UPDATED: Subtle fade-in animation for better UX */
       animation: fadeIn 0.3s ease-in;
     }
+
+    
+      /* ✅ Responsive for mobile devices */
+@media (max-width: 768px) {
+  main {
+    width: 100%;
+    padding: 0 10px 70px;
+  }
+
+  .chatbox.active {
+    max-height: calc(100vh - 160px);
+    padding: 12px;
+  }
+
+  .msg {
+    font-size: 0.95rem;
+    max-width: 90%;
+  }
+
+  .input-wrap {
+    bottom: 8px;
+    width: 95%;
+    gap: 6px;
+    padding: 6px 10px;
+  }
+
+  .input-wrap input {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .input-wrap button {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  h2 {
+    font-size: 1.4rem;
+  }
+
+  .greeting {
+    font-size: 0.9rem;
+  }
+
+  .msg {
+    font-size: 0.9rem;
+  }
+}
+
+    
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
