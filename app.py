@@ -290,6 +290,12 @@ def reset_chat():
 def health_check():
     return jsonify({'status': 'healthy', 'message': 'ChatNex backend is running!'}), 200
 
+@app.route('/')
+def home():
+    return "ChatNex backend is running!"
+
+
+
 if __name__ == '__main__':
     print("🚀 Starting ChatNex backend server...")
     print(f"✅ Gemini API configured")

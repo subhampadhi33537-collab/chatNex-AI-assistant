@@ -373,28 +373,32 @@ main {
     window.addEventListener('load', () => input.focus());
   </script> -->
 
-  <script>
-  // elements
+<script>
+  // ================================
+  // 🌐 ChatNex Frontend — v2
+  // ================================
+
+  // UI elements
   const input = document.getElementById('userInput');
   const sendBtn = document.getElementById('sendBtn');
   const chatbox = document.getElementById('chatbox');
   const header = document.getElementById('pageHeader');
   const greeting = document.getElementById('greeting');
 
-  // your deployed Render backend URL 👇 (replace with yours if different)
+  // 🌍 Your live Render backend endpoint
   const BACKEND_URL = "https://chatnex-ai-assistant.onrender.com/chat";
 
-  // helper to create and append message
+  // helper to append messages
   function addMessage(sender, text) {
-    const el = document.createElement('div');
-    el.className = 'msg ' + (sender === 'bot' ? 'bot' : 'user');
-    el.textContent = text;
-    chatbox.appendChild(el);
+    const msg = document.createElement('div');
+    msg.className = `msg ${sender}`;
+    msg.textContent = text;
+    chatbox.appendChild(msg);
     chatbox.scrollTop = chatbox.scrollHeight;
-    return el;
+    return msg;
   }
 
-  // show chatbox (first time)
+  // reveal chat UI
   function revealChatbox() {
     header.classList.add('hidden');
     greeting.classList.add('hidden');
@@ -403,81 +407,69 @@ main {
     setTimeout(() => chatbox.scrollTop = chatbox.scrollHeight, 120);
   }
 
-  // send message flow
+  // main send function
   async function sendMessage() {
     const message = input.value.trim();
     if (!message) return;
 
-    // reveal chat area if first time
+    // first-time reveal
     if (!chatbox.classList.contains('active')) {
       revealChatbox();
     }
 
-    // show user message
+    // display user message
     addMessage('user', message);
     input.value = '';
     sendBtn.disabled = true;
     input.disabled = true;
 
-    // typing indicator
+    // show typing...
     const typing = document.createElement('div');
     typing.className = 'msg bot';
-    typing.style.fontStyle = 'italic';
-    typing.style.opacity = '0.9';
     typing.textContent = 'Typing...';
+    typing.style.fontStyle = 'italic';
+    typing.style.opacity = '0.8';
     chatbox.appendChild(typing);
     chatbox.scrollTop = chatbox.scrollHeight;
 
-    let typingRemoved = false;
-
     try {
-      // timeout-safe fetch
+      // timeout-safe fetch setup
       const controller = new AbortController();
-      const timeoutMs = 20000;
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const timeoutMs = 20000; // 20 seconds
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-      let res, data;
+      const res = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+
+      const text = await res.text();
+      let data = {};
       try {
-        res = await fetch(BACKEND_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message }),
-          signal: controller.signal
-        });
-      } finally {
-        clearTimeout(timeoutId);
+        data = JSON.parse(text);
+      } catch {
+        data = { error: "Invalid JSON from server", raw: text };
       }
 
-      const raw = await res.text();
-      try {
-        data = raw ? JSON.parse(raw) : {};
-      } catch (parseErr) {
-        data = { error: "Invalid JSON from server", raw };
-      }
+      // remove typing
+      typing.remove();
 
-      // remove typing indicator
-      if (!typingRemoved && chatbox.contains(typing)) {
-        chatbox.removeChild(typing);
-        typingRemoved = true;
-      }
-
-      if (res.ok && data && data.reply) {
+      // handle response
+      if (res.ok && data.reply) {
         addMessage('bot', data.reply);
       } else {
-        const msg = data.error || `Server error: ${res.status} ${res.statusText}`;
-        addMessage('bot', "⚠️ " + msg);
+        addMessage('bot', "⚠️ " + (data.error || `Server error: ${res.status} ${res.statusText}`));
       }
 
     } catch (err) {
-      if (!typingRemoved && chatbox.contains(typing)) {
-        chatbox.removeChild(typing);
-        typingRemoved = true;
-      }
-
-      if (err.name === "AbortError") {
-        addMessage("bot", "⚠️ Request timed out. The server may be slow or asleep (free plan).");
+      typing.remove();
+      if (err.name === 'AbortError') {
+        addMessage('bot', "⚠️ Request timed out. The backend may be waking up (Render free plan).");
       } else {
-        addMessage("bot", "⚠️ Network error: " + (err.message || err));
+        addMessage('bot', "⚠️ Network error: " + (err.message || err));
       }
     } finally {
       sendBtn.disabled = false;
@@ -488,12 +480,13 @@ main {
 
   // event listeners
   sendBtn.addEventListener('click', sendMessage);
-  input.addEventListener('keypress', (e) => {
+  input.addEventListener('keypress', e => {
     if (e.key === 'Enter') sendMessage();
   });
 
   window.addEventListener('load', () => input.focus());
 </script>
+
 
 </body>
 </html>
