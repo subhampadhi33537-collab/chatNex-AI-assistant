@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ChatNex - Smart AI Chatbot</title>
+
+  <!-- SEO & Social tags (kept as before) -->
+  <meta name="description" content="ChatNex is a free AI chatbot for smart searching and conversations. Ask anything and get instant answers.">
+  <meta name="keywords" content="ChatNex, AI chatbot, smart search, free chatbot, conversational AI">
+  <meta name="author" content="Your Name">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="ChatNex - Smart AI Chatbot">
+  <meta property="og:description" content="ChatNex helps you search and chat instantly with AI.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yourwebsite.com">
+  <meta property="og:image" content="https://yourwebsite.com/chatnex-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ChatNex - Smart AI Chatbot">
+  <meta name="twitter:description" content="ChatNex helps you search and chat instantly with AI.">
+  <meta name="twitter:image" content="https://yourwebsite.com/chatnex-preview.png">
+
+  <style>
+    :root{
+      --max-w: 420px;
+      --accent: #4caf50;
+      --bg: #f4f6f9;
+      --card-bg: #ffffff;
+      --transition: 300ms ease;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Arial, sans-serif;
+      background:var(--bg);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      color:#18303a;
+    }
+ 
+    /* Header & greeting area */
+    header{ width:100%; display:flex; justify-content:center; }
+    h2{
+      margin:44px 0 6px;
+      color:var(--accent);
+      font-size:32px;
+      text-align:center;
+    }
+    .greeting{
+      max-width:var(--max-w);
+      text-align:center;
+      color:#555;
+      margin-bottom:18px;
+    }
+main {
+  padding-top: 10px; /* reduce top padding */
+}
+
+    /* main container to position the chat area */
+    main{ width:150%; max-width:var(--max-w); padding:0 12px 40px; display:flex; justify-content:center; }
+
+    /* chatbox initially hidden; when .active it expands & centers */
+    .chatbox{
+      width: 0;
+      height: 0;
+      opacity: 0;
+      pointer-events: none;
+      border-radius: 12px;
+      background: var(--card-bg);
+      box-shadow: 0 10px 30px rgba(8,20,40,0.06);
+      overflow-y: auto;
+      transition: width var(--transition), height var(--transition), opacity var(--transition), transform var(--transition);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding: 0;
+    }
+    .msg.bot {
+  white-space: pre-line;
+}
+
+     :root {
+  --max-w: 600px; /* increased from 420px */
+}
+    /* visible state after user submits */
+    .chatbox.active{
+      /* FIXED: Changed from 300% to 100% to fit parent container properly */
+      width: 200%;
+      /* FIXED: Removed fixed height override; now fully responsive */
+      height: calc(100vh - 160px);
+      opacity: 1;
+      pointer-events: auto;
+      padding: 18px;
+      transform: translateY(-60px);
+    }
+    @media (max-width: 520px) {
+  .chatbox.active {
+    width: 100%; /* responsive full width */
+    height: calc(100vh - 180px);
+  }
+}
+    /* message styling */
+    .msg{
+      padding:10px 14px;
+      border-radius:12px;
+      max-width:78%;
+      line-height:1.35;
+      word-wrap:break-word;
+      box-shadow:0 2px 8px rgba(8,20,40,0.03);
+      /* UPDATED: Subtle fade-in animation for better UX */
+      animation: fadeIn 0.3s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .msg.bot{ background:#eef2ff; color:#0b1220; align-self:flex-start; }
+    .msg.user{ background:#e6fff4; color:#071a13; align-self:flex-end; }
+
+    /* input fixed at bottom (always visible) */
+    .input-wrap{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:20px;
+      width:100%;
+      max-width:var(--max-w);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding:6px;
+      z-index:80;
+    }
+    .input-wrap input{
+      flex:1;
+      padding:12px 14px;
+      border-radius:999px;
+      border:1px solid #d0d7de;
+      font-size:15px;
+      outline:none;
+      background:#fff;
+    }
+    .input-wrap button{
+      padding:10px 18px;
+      border-radius:999px;
+      border:none;
+      background:var(--accent);
+      color:#fff;
+      cursor:pointer;
+      font-weight:600;
+      box-shadow:0 6px 14px rgba(76,175,80,0.14);
+    }
+    .input-wrap button:disabled{opacity:0.6;cursor:not-allowed;}
+
+    /* When chatbox is active, hide header & greeting smoothly */
+    .hidden { opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity var(--transition), transform var(--transition); }
+
+    /* responsive */
+    @media (max-width:520px){
+      h2{ font-size:24px; margin-top:18px }
+      .chatbox.active{ 
+        /* FIXED: Better mobile height and padding */
+        height: calc(100vh - 180px); 
+        min-height:360px; 
+        padding:12px; 
+      }
+      .input-wrap{ bottom:12px; padding:4px; gap:8px }
+    }
+  </style>
+</head>
+<body>
+  <header id="pageHeader">
+    <h2>ChatNex</h2>
+  </header>
+
+  <div id="greeting" class="greeting">
+    <p>Hello! I am ChatNex. How can I help you today?</p>
+  </div>
+
+  <main>
+    <!-- chatbox is initially hidden; becomes visible after first submit -->
+    <div id="chatbox" class="chatbox" role="log" aria-live="polite" aria-hidden="true">
+      <!-- messages will be injected here by JS -->
+    </div>
+  </main>
+
+  <!-- input fixed at bottom (always visible to allow trigger) -->
+  <div class="input-wrap" role="search" aria-label="Chat input">
+    <input id="userInput" type="text" placeholder="Type your message..." aria-label="Type your message" />
+    <button id="sendBtn" aria-label="Send message">Send</button>
+  </div>
+
+  <script>
+    // elements
+    const input = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const chatbox = document.getElementById('chatbox');
+    const header = document.getElementById('pageHeader');
+    const greeting = document.getElementById('greeting');
+
+    // helper to create and append message
+    function addMessage(sender, text) {
+      const el = document.createElement('div');
+      el.className = 'msg ' + (sender === 'bot' ? 'bot' : 'user');
+      el.textContent = text;
+      chatbox.appendChild(el);
+      chatbox.scrollTop = chatbox.scrollHeight;
+      return el;
+    }
+
+    // show chatbox (first time)
+    function revealChatbox() {
+      // hide header and greeting
+      header.classList.add('hidden');
+      greeting.classList.add('hidden');
+
+      // activate chatbox style & accessibility attr
+      chatbox.classList.add('active');
+      chatbox.setAttribute('aria-hidden', 'false');
+
+      // small delay so layout stabilizes then scroll to bottom
+      setTimeout(() => chatbox.scrollTop = chatbox.scrollHeight, 120);
+    }
+
+    // send flow: reveal chatbox (if hidden) -> add user msg -> call backend -> show bot reply
+    async function sendMessage() {
+      const message = input.value.trim();
+      if (!message) return;
+
+      // reveal chat area if first time
+      if (!chatbox.classList.contains('active')) {
+        revealChatbox();
+      }
+
+      // show user message
+      addMessage('user', message);
+      input.value = '';
+      sendBtn.disabled = true;
+      input.disabled = true;
+      input.focus();  // Ensure focus even after clear
+
+      // typing indicator
+      const typing = document.createElement('div');
+      typing.className = 'msg bot';
+      typing.style.fontStyle = 'italic';
+      typing.style.opacity = '0.9';
+      typing.textContent = 'Typing...';
+      chatbox.appendChild(typing);
+      chatbox.scrollTop = chatbox.scrollHeight;
+
+      let typingRemoved = false;
+
+      try {
+        // --- Robust fetch with timeout & safe JSON parse ---
+        const controller = new AbortController();
+        const timeoutMs = 20000; // 20 seconds
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+        let data = null;
+        let res = null;
+
+        try {
+          res = await fetch('http://127.0.0.1:5000/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message }),
+            signal: controller.signal
+          });
+        } finally {
+          clearTimeout(timeoutId);
+        }
+
+        // read text then parse JSON safely
+        const raw = await res.text();
+        try {
+          data = raw ? JSON.parse(raw) : {};
+        } catch (parseErr) {
+          data = { error: 'Invalid JSON response from server', raw };
+        }
+
+        // remove typing indicator (only if present)
+        if (!typingRemoved && chatbox.contains(typing)) {
+          chatbox.removeChild(typing);
+          typingRemoved = true;
+        }
+
+        if (res.ok && data && data.reply) {
+          addMessage('bot', data.reply);
+        } else {
+          // prefer server-provided message when available
+          const serverMsg = data && data.error ? data.error : `Server error: ${res ? (res.status + ' ' + res.statusText) : 'no-response'}`;
+          addMessage('bot', 'Error: ' + serverMsg);
+        }
+      } catch (err) {
+        // remove typing if still present
+        if (!typingRemoved && chatbox.contains(typing)) {
+          chatbox.removeChild(typing);
+          typingRemoved = true;
+        }
+
+        if (err.name === 'AbortError') {
+          addMessage('bot', '⚠️ Request timed out. The server may be slow or unreachable.');
+        } else {
+          addMessage('bot', '⚠️ Network error: ' + (err.message || err));
+        }
+      } finally {
+        sendBtn.disabled = false;
+        input.disabled = false;
+        input.focus();  // Refocus input
+      }
+    }
+
+    // events
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    // accessibility: focus input on load
+    window.addEventListener('load', () => input.focus());
+  </script>
+</body>
+</html>
