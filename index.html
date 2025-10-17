@@ -243,7 +243,7 @@ main {
     <button id="sendBtn" aria-label="Send message">Send</button>
   </div>
 
-  <script>
+  <!-- <script>
     // elements
     const input = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
@@ -371,6 +371,129 @@ main {
 
     // accessibility: focus input on load
     window.addEventListener('load', () => input.focus());
-  </script>
+  </script> -->
+
+  <script>
+  // elements
+  const input = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const chatbox = document.getElementById('chatbox');
+  const header = document.getElementById('pageHeader');
+  const greeting = document.getElementById('greeting');
+
+  // your deployed Render backend URL 👇 (replace with yours if different)
+  const BACKEND_URL = "https://chatnex-ai-assistant.onrender.com/chat";
+
+  // helper to create and append message
+  function addMessage(sender, text) {
+    const el = document.createElement('div');
+    el.className = 'msg ' + (sender === 'bot' ? 'bot' : 'user');
+    el.textContent = text;
+    chatbox.appendChild(el);
+    chatbox.scrollTop = chatbox.scrollHeight;
+    return el;
+  }
+
+  // show chatbox (first time)
+  function revealChatbox() {
+    header.classList.add('hidden');
+    greeting.classList.add('hidden');
+    chatbox.classList.add('active');
+    chatbox.setAttribute('aria-hidden', 'false');
+    setTimeout(() => chatbox.scrollTop = chatbox.scrollHeight, 120);
+  }
+
+  // send message flow
+  async function sendMessage() {
+    const message = input.value.trim();
+    if (!message) return;
+
+    // reveal chat area if first time
+    if (!chatbox.classList.contains('active')) {
+      revealChatbox();
+    }
+
+    // show user message
+    addMessage('user', message);
+    input.value = '';
+    sendBtn.disabled = true;
+    input.disabled = true;
+
+    // typing indicator
+    const typing = document.createElement('div');
+    typing.className = 'msg bot';
+    typing.style.fontStyle = 'italic';
+    typing.style.opacity = '0.9';
+    typing.textContent = 'Typing...';
+    chatbox.appendChild(typing);
+    chatbox.scrollTop = chatbox.scrollHeight;
+
+    let typingRemoved = false;
+
+    try {
+      // timeout-safe fetch
+      const controller = new AbortController();
+      const timeoutMs = 20000;
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+      let res, data;
+      try {
+        res = await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message }),
+          signal: controller.signal
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      const raw = await res.text();
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch (parseErr) {
+        data = { error: "Invalid JSON from server", raw };
+      }
+
+      // remove typing indicator
+      if (!typingRemoved && chatbox.contains(typing)) {
+        chatbox.removeChild(typing);
+        typingRemoved = true;
+      }
+
+      if (res.ok && data && data.reply) {
+        addMessage('bot', data.reply);
+      } else {
+        const msg = data.error || `Server error: ${res.status} ${res.statusText}`;
+        addMessage('bot', "⚠️ " + msg);
+      }
+
+    } catch (err) {
+      if (!typingRemoved && chatbox.contains(typing)) {
+        chatbox.removeChild(typing);
+        typingRemoved = true;
+      }
+
+      if (err.name === "AbortError") {
+        addMessage("bot", "⚠️ Request timed out. The server may be slow or asleep (free plan).");
+      } else {
+        addMessage("bot", "⚠️ Network error: " + (err.message || err));
+      }
+    } finally {
+      sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
+    }
+  }
+
+  // event listeners
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  window.addEventListener('load', () => input.focus());
+</script>
+
 </body>
 </html>
