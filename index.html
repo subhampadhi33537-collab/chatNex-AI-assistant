@@ -219,6 +219,53 @@ main {
       }
       .input-wrap{ bottom:12px; padding:4px; gap:8px }
     }
+
+    /* Sidebar with name + clear button (left middle) */
+/* Sidebar with name + clear button (left middle) */
+.sidebar {
+  position: fixed;
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none; /* 👈 Hidden by default */
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.sidebar.visible {
+  display: flex;     /* 👈 Show it after message sent */
+  opacity: 1;
+}
+
+.app-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent, #00bcd4);
+  margin: 0;
+}
+
+.clear-btn {
+  padding: 8px 14px;
+  background: #ff5252;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow: 0 4px 10px rgba(255, 82, 82, 0.3);
+  transition: background 0.3s, transform 0.2s;
+}
+.clear-btn:hover {
+  background: #ff3333;
+  transform: scale(1.05);
+}
+
+
+
   </style>
 </head>
 <body>
@@ -243,135 +290,10 @@ main {
     <button id="sendBtn" aria-label="Send message">Send</button>
   </div>
 
-  <!-- <script>
-    // elements
-    const input = document.getElementById('userInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const chatbox = document.getElementById('chatbox');
-    const header = document.getElementById('pageHeader');
-    const greeting = document.getElementById('greeting');
-
-    // helper to create and append message
-    function addMessage(sender, text) {
-      const el = document.createElement('div');
-      el.className = 'msg ' + (sender === 'bot' ? 'bot' : 'user');
-      el.textContent = text;
-      chatbox.appendChild(el);
-      chatbox.scrollTop = chatbox.scrollHeight;
-      return el;
-    }
-
-    // show chatbox (first time)
-    function revealChatbox() {
-      // hide header and greeting
-      header.classList.add('hidden');
-      greeting.classList.add('hidden');
-
-      // activate chatbox style & accessibility attr
-      chatbox.classList.add('active');
-      chatbox.setAttribute('aria-hidden', 'false');
-
-      // small delay so layout stabilizes then scroll to bottom
-      setTimeout(() => chatbox.scrollTop = chatbox.scrollHeight, 120);
-    }
-
-    // send flow: reveal chatbox (if hidden) -> add user msg -> call backend -> show bot reply
-    async function sendMessage() {
-      const message = input.value.trim();
-      if (!message) return;
-
-      // reveal chat area if first time
-      if (!chatbox.classList.contains('active')) {
-        revealChatbox();
-      }
-
-      // show user message
-      addMessage('user', message);
-      input.value = '';
-      sendBtn.disabled = true;
-      input.disabled = true;
-      input.focus();  // Ensure focus even after clear
-
-      // typing indicator
-      const typing = document.createElement('div');
-      typing.className = 'msg bot';
-      typing.style.fontStyle = 'italic';
-      typing.style.opacity = '0.9';
-      typing.textContent = 'Typing...';
-      chatbox.appendChild(typing);
-      chatbox.scrollTop = chatbox.scrollHeight;
-
-      let typingRemoved = false;
-
-      try {
-        // --- Robust fetch with timeout & safe JSON parse ---
-        const controller = new AbortController();
-        const timeoutMs = 20000; // 20 seconds
-        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-        let data = null;
-        let res = null;
-
-        try {
-          res = await fetch('http://127.0.0.1:5000/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message }),
-            signal: controller.signal
-          });
-        } finally {
-          clearTimeout(timeoutId);
-        }
-
-        // read text then parse JSON safely
-        const raw = await res.text();
-        try {
-          data = raw ? JSON.parse(raw) : {};
-        } catch (parseErr) {
-          data = { error: 'Invalid JSON response from server', raw };
-        }
-
-        // remove typing indicator (only if present)
-        if (!typingRemoved && chatbox.contains(typing)) {
-          chatbox.removeChild(typing);
-          typingRemoved = true;
-        }
-
-        if (res.ok && data && data.reply) {
-          addMessage('bot', data.reply);
-        } else {
-          // prefer server-provided message when available
-          const serverMsg = data && data.error ? data.error : `Server error: ${res ? (res.status + ' ' + res.statusText) : 'no-response'}`;
-          addMessage('bot', 'Error: ' + serverMsg);
-        }
-      } catch (err) {
-        // remove typing if still present
-        if (!typingRemoved && chatbox.contains(typing)) {
-          chatbox.removeChild(typing);
-          typingRemoved = true;
-        }
-
-        if (err.name === 'AbortError') {
-          addMessage('bot', '⚠️ Request timed out. The server may be slow or unreachable.');
-        } else {
-          addMessage('bot', '⚠️ Network error: ' + (err.message || err));
-        }
-      } finally {
-        sendBtn.disabled = false;
-        input.disabled = false;
-        input.focus();  // Refocus input
-      }
-    }
-
-    // events
-    sendBtn.addEventListener('click', sendMessage);
-    input.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
-    });
-
-    // accessibility: focus input on load
-    window.addEventListener('load', () => input.focus());
-  </script> -->
+  <div class="sidebar">
+  <h2 class="app-name">ChatNex</h2>
+  <button class="clear-btn" id="clearChat">🧹 Clear Chat</button>
+</div>
 
 <script>
   // ================================
@@ -400,12 +322,18 @@ main {
 
   // reveal chat UI
   function revealChatbox() {
-    header.classList.add('hidden');
-    greeting.classList.add('hidden');
-    chatbox.classList.add('active');
-    chatbox.setAttribute('aria-hidden', 'false');
-    setTimeout(() => chatbox.scrollTop = chatbox.scrollHeight, 120);
-  }
+  header.classList.add('hidden');
+  greeting.classList.add('hidden');
+  chatbox.classList.add('active');
+  chatbox.setAttribute('aria-hidden', 'false');
+
+  // 👇 Show the sidebar at the same time as chatbox
+  const sidebar = document.querySelector('.sidebar');
+  sidebar.classList.add('visible');
+
+  setTimeout(() => chatbox.scrollTop = chatbox.scrollHeight, 120);
+}
+
 
   // main send function
   async function sendMessage() {
@@ -485,6 +413,16 @@ main {
   });
 
   window.addEventListener('load', () => input.focus());
+
+const clearBtn = document.getElementById('clearChat');
+
+clearBtn.addEventListener('click', () => {
+  const confirmClear = confirm("🧹 Are you sure you want to clear all messages?");
+  if (confirmClear) {
+    chatbox.innerHTML = '';
+  }
+});
+
 </script>
 
 
