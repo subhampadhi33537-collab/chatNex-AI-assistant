@@ -202,7 +202,7 @@ main {
 /* Sidebar with name + clear button (left middle) */
 .sidebar {
   position: fixed;
-  top:20px;
+  top:30px;
   transform: translateY(-50%);
   display: none; /* 👈 Hidden by default */
   flex-direction: column;
